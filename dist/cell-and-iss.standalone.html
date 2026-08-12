@@ -1697,9 +1697,9 @@ const BUILDERS = {
 
 
 const MAX_LIVE = 4;
-const live = [];
 const deck = document.getElementById('deck');
 const frames = [...document.querySelectorAll('.frame')];
+const slots = [...document.querySelectorAll('.stage-slot')];
 
 /* ---- starfield ---- */
 {
@@ -1751,16 +1751,16 @@ function decorate(slot, stage, obj) {
 }
 
 async function mount(slot) {
-  if (slot.dataset.mounted === '1') return;
-  slot.dataset.mounted = '1';
+  if (slot._stage) return;
   const stage = document.createElement('three-d-stage');
   stage.setAttribute('name', slot.dataset.name || 'model');
   stage.setAttribute('background', 'transparent');
   if (slot.dataset.autorotate === '1') stage.setAttribute('autorotate', '');
-  slot.appendChild(stage);
   slot._stage = stage;
+  slot.appendChild(stage);
   try {
     const { THREE } = await stage.ready;
+    if (slot._stage !== stage) return;   // scrolled away while booting
     const obj = slot.dataset.single
       ? BUILDERS[slot.dataset.single](THREE)
       : pairScene(THREE, BUILDERS[slot.dataset.left], BUILDERS[slot.dataset.right]);
@@ -1769,8 +1769,6 @@ async function mount(slot) {
     frame(stage, obj, THREE, !!slot.dataset.single);
     onDemand(stage);
     slot.classList.add('is-live');
-    live.push(slot);
-    evict();
   } catch (err) {
     slot.classList.add('is-failed');
     console.error('stage failed', slot.dataset.name, err);
@@ -1786,29 +1784,46 @@ function unmount(slot) {
   } catch (e) { /* renderer already gone */ }
   stage.remove();
   slot._stage = null;
-  slot.dataset.mounted = '0';
   slot.classList.remove('is-live');
 }
 
-// Browsers cap live WebGL contexts: keep the frames nearest the viewport
-// alive and rebuild the rest on the way back.
-function evict() {
-  while (live.length > MAX_LIVE) {
-    const mid = window.innerHeight / 2;
-    let worst = 0, worstD = -1;
-    live.forEach((s, i) => {
+// Browsers cap live WebGL contexts: keep the frames nearest the viewport alive
+// and rebuild the rest on the way back. Ranked off scroll position, not an
+// IntersectionObserver — an observer only reports *changes*, so a slot evicted
+// while still on screen would never be told to come back, and stayed blank.
+function ranked() {
+  const mid = deck.clientHeight / 2;
+  return slots
+    .map((s) => {
       const r = s.getBoundingClientRect();
-      const d = Math.abs(r.top + r.height / 2 - mid);
-      if (d > worstD) { worstD = d; worst = i; }
-    });
-    unmount(live.splice(worst, 1)[0]);
-  }
+      return { s, d: Math.abs(r.top + r.height / 2 - mid) };
+    })
+    .sort((a, b) => a.d - b.d);
 }
 
-const near = new IntersectionObserver((entries) => {
-  for (const e of entries) if (e.isIntersecting) mount(e.target);
-}, { root: deck, rootMargin: '120% 0px' });
-document.querySelectorAll('.stage-slot').forEach((s) => near.observe(s));
+// Drop stages the moment they fall out of range, but only build new ones once
+// the deck has settled: a rail jump flies past half the frames, and mounting
+// each one in passing churns WebGL contexts nobody gets to see.
+function prune() {
+  ranked().forEach(({ s }, i) => { if (i >= MAX_LIVE) unmount(s); });
+}
+
+function fill() {
+  const reach = deck.clientHeight * 1.6;
+  ranked().forEach(({ s, d }, i) => { if (i < MAX_LIVE && d < reach) mount(s); });
+}
+
+let queued = false, settle = 0;
+function scheduleSync() {
+  clearTimeout(settle);
+  settle = setTimeout(fill, 150);
+  if (queued) return;
+  queued = true;
+  requestAnimationFrame(() => { queued = false; prune(); });
+}
+deck.addEventListener('scroll', scheduleSync, { passive: true });
+addEventListener('resize', scheduleSync);
+fill();
 
 // Render on demand: a still model needs one frame, not sixty a second.
 // Several continuously-looping WebGL stages will stall the main thread.
