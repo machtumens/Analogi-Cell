@@ -1,0 +1,38 @@
+# Third-party licenses
+
+This project vendors the following components. Their source is included under
+`vendor/` and `fonts/` and each retains its original license.
+
+## three.js (r0.184.0)
+
+`vendor/three.min.js`, `vendor/OrbitControls.min.js`, `vendor/OBJExporter.min.js`,
+`vendor/GLTFExporter.min.js` — bundled/minified from three.js.
+
+> The MIT License
+>
+> Copyright © 2010-2025 three.js authors
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in
+> all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+Source: https://github.com/mrdoob/three.js
+
+## Fonts — Instrument Serif & Sora
+
+`fonts/*.woff2` — self-hosted subsets served by Google Fonts.
+
+- **Instrument Serif** — © The Instrument Serif Project Authors
+- **Sora** — © The Sora Project Authors
+
+Both are licensed under the SIL Open Font License, Version 1.1
+(https://openfontlicense.org). The OFL permits redistribution and web
+embedding; the fonts may not be sold on their own.
