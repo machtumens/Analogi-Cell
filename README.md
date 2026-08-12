@@ -2,7 +2,7 @@
 
 An interactive, scrollable comparison of an animal cell and the International
 Space Station — ten jobs (boundary, power, manufacturing, waste, …) shown side
-by side as real-time 3D models you can orbit, zoom, and export to OBJ or GLB.
+by side as real-time 3D models you can orbit, zoom, and export to OBJ.
 
 Everything runs **fully offline**: three.js and the fonts are vendored locally,
 so there are no CDN or network requests.
@@ -24,7 +24,7 @@ so there are no CDN or network requests.
 ```
 index.html      modular entry (loads src/, vendor/, fonts/)
 src/            main.js · models.js · three-d-stage.js  (app + 22 model builders)
-vendor/         three.min.js + OrbitControls/OBJExporter/GLTFExporter (minified)
+vendor/         three.min.js + OrbitControls/OBJExporter (minified)
 fonts/          Instrument Serif + Sora, self-hosted woff2 + fonts.css
 dist/           cell-and-iss.standalone.html  (single-file build)
 build.mjs       regenerates dist/ from index.html + src/ + vendor/ + fonts/

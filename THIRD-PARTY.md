@@ -6,7 +6,6 @@ This project vendors the following components. Their source is included under
 ## three.js (r0.184.0)
 
 `vendor/three.min.js`, `vendor/OrbitControls.min.js`, `vendor/OBJExporter.min.js`,
-`vendor/GLTFExporter.min.js` — bundled/minified from three.js.
 
 > The MIT License
 >

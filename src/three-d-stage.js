@@ -94,12 +94,7 @@
       this._objBtn.type = "button";
       this._objBtn.textContent = "Download OBJ + MTL";
       this._objBtn.addEventListener("click", () => this._runExport("obj"));
-      this._glbBtn = document.createElement("button");
-      this._glbBtn.type = "button";
-      this._glbBtn.textContent = "Download GLB";
-      this._glbBtn.addEventListener("click", () => this._runExport("glb"));
       this._toolbar.appendChild(this._objBtn);
-      this._toolbar.appendChild(this._glbBtn);
       root.appendChild(this._toolbar);
       this._setButtonsEnabled(false);
       this.ready = new Promise((resolve, reject) => {
@@ -238,7 +233,6 @@
     }
     _setButtonsEnabled(on) {
       this._objBtn.disabled = !on;
-      this._glbBtn.disabled = !on;
     }
     /** Every mesh and material needs a unique name for o/usemtl lines —
      *  fill in stable fallbacks, and return the unique material list. */
@@ -275,7 +269,7 @@
     async _runExport(format) {
       if (!this._object) return;
       try {
-        await (format === "obj" ? this._exportObj() : this._exportGlb());
+        await this._exportObj();
         notifyExport(format, true);
       } catch (err) {
         notifyExport(format, false);
@@ -301,19 +295,6 @@
       }
       download(new Blob([obj], { type: "text/plain" }), base + ".obj");
       download(new Blob([mtl], { type: "text/plain" }), base + ".mtl");
-    }
-    async _exportGlb() {
-      if (!this._object) return;
-      const mod = await import("three/addons/exporters/GLTFExporter.js");
-      this._nameParts();
-      const base = this._basename;
-      const buf = await new mod.GLTFExporter().parseAsync(this._object, {
-        binary: true
-      });
-      download(
-        new Blob([buf], { type: "model/gltf-binary" }),
-        base + ".glb"
-      );
     }
   }
   customElements.define("three-d-stage", ThreeDStage);
