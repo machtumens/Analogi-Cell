@@ -25,12 +25,12 @@ This project vendors the following components. Their source is included under
 
 Source: https://github.com/mrdoob/three.js
 
-## Fonts — Instrument Serif & Sora
+## Fonts — Sora & JetBrains Mono
 
 `fonts/*.woff2` — self-hosted subsets served by Google Fonts.
 
-- **Instrument Serif** — © The Instrument Serif Project Authors
 - **Sora** — © The Sora Project Authors
+- **JetBrains Mono** — © The JetBrains Mono Project Authors
 
 Both are licensed under the SIL Open Font License, Version 1.1
 (https://openfontlicense.org). The OFL permits redistribution and web

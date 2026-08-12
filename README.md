@@ -1,8 +1,9 @@
 # A cell works like a space station
 
-An interactive, scrollable comparison of an animal cell and the International
-Space Station — ten jobs (boundary, power, manufacturing, waste, …) shown side
-by side as real-time 3D models you can orbit and zoom.
+A full-screen slide deck comparing an animal cell and the International Space
+Station — ten jobs (boundary, power, manufacturing, waste, …) shown side by
+side as real-time 3D models you can orbit and zoom. Scroll, arrow keys, or the
+chapter rail page through it; each frame snaps into place.
 
 Everything runs **fully offline**: three.js and the fonts are vendored locally,
 so there are no CDN or network requests.
@@ -25,7 +26,7 @@ so there are no CDN or network requests.
 index.html      modular entry (loads src/, vendor/, fonts/)
 src/            main.js · models.js · three-d-stage.js  (app + 22 model builders)
 vendor/         three.min.js + OrbitControls (minified)
-fonts/          Instrument Serif + Sora, self-hosted woff2 + fonts.css
+fonts/          Sora + JetBrains Mono, self-hosted woff2 + fonts.css
 dist/           cell-and-iss.standalone.html  (single-file build)
 build.mjs       regenerates dist/ from index.html + src/ + vendor/ + fonts/
 ```
@@ -45,7 +46,7 @@ page. Output: `dist/cell-and-iss.standalone.html`.
 ## Credits & license
 
 Project code is MIT licensed — see [LICENSE](LICENSE).
-Vendored dependencies (three.js, Instrument Serif, Sora) retain their own
+Vendored dependencies (three.js, Sora, JetBrains Mono) retain their own
 licenses — see [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Models are simplified and not to scale, built to be read rather than measured.

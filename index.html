@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The cell runs like a space station</title>
 <link rel="icon" href="data:,">
+<title>The cell runs like a space station</title>
 <script type="importmap">
 {
   "imports": {
@@ -16,371 +16,336 @@
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root {
-    --paper: #F6F1E7;
-    --card: #FFFDF8;
-    --ink: #1D1F1B;
-    --dim: #5D6157;
-    --line: rgba(29, 31, 27, 0.10);
-    --cell: #157468;
-    --iss: #AE5F28;
-    --sage: #CFE0D2;
-    --apricot: #F3D9C2;
+    --void: #04070F;
+    --ink: #EAF0F8;
+    --dim: #8A99AE;
+    --faint: #55647B;
+    --cell: #7DE0D0;
+    --iss: #F2B36A;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html, body { height: 100%; margin: 0; }
   body {
-    margin: 0;
-    background: var(--paper);
+    background: var(--void);
     color: var(--ink);
-    font: 300 17px/1.7 Sora, system-ui, sans-serif;
+    font: 300 17px/1.6 Sora, system-ui, sans-serif;
     text-wrap: pretty;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-
-  a { color: var(--cell); text-decoration: none; border-bottom: 1px solid rgba(21,116,104,.35); }
-  a:hover { color: #0E5A50; border-bottom-color: #0E5A50; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
-  .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; }
-
-  .label {
-    font-size: 11px; font-weight: 500; letter-spacing: .19em; text-transform: uppercase;
-    color: var(--dim);
-  }
-
-  .blobs { position: absolute; inset: -160px 0 auto 0; height: 940px; z-index: 0; pointer-events: none; overflow: hidden; }
-  .blob { position: absolute; border-radius: 50%; }
-  .blob.a { width: 760px; height: 640px; left: -200px; top: 20px;
-    background: radial-gradient(closest-side, rgba(207,224,210,.95), rgba(207,224,210,0)); }
-  .blob.b { width: 720px; height: 620px; right: -160px; top: -80px;
-    background: radial-gradient(closest-side, rgba(243,217,194,.95), rgba(243,217,194,0)); }
-  .blob.c { width: 560px; height: 500px; left: 44%; top: 280px;
-    background: radial-gradient(closest-side, rgba(231,226,210,.9), rgba(231,226,210,0)); }
-
-  header.hero { padding: 96px 0 44px; }
-  header.hero .label { color: var(--cell); }
-  h1 {
-    font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
-    font-size: clamp(46px, 8vw, 96px); line-height: 0.96; letter-spacing: -0.018em;
-    margin: 20px 0 26px; max-width: 14ch;
-  }
-  h1 em { font-style: italic; color: var(--iss); }
-  .lede { font-size: 19.5px; color: var(--dim); max-width: 56ch; margin: 0; }
-  .hint { margin-top: 30px; font-size: 11px; }
-  .hint span { color: rgba(29,31,27,.35); }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 30px;
     overflow: hidden;
-    box-shadow: 0 2px 3px rgba(29,31,27,.03), 0 30px 60px -40px rgba(29,31,27,.45);
   }
-  .cardHead {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 18px;
-    padding: 20px 26px 18px;
-  }
-  .cardHead.split { display: grid; grid-template-columns: 1fr 1fr; }
-  .cardHead .name { font-size: 14.5px; letter-spacing: -.005em; }
-  .cardHead .tag { font-size: 11px; letter-spacing: .14em; color: rgba(29,31,27,.4); }
-  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 10px; vertical-align: 1px; }
-  .dot.bio { background: var(--cell); }
-  .dot.sta { background: var(--iss); }
+  a { color: var(--cell); text-decoration: none; }
+  a:hover { color: #B6F2E8; }
+  .mono { font-family: var(--mono); }
 
-  .stage-slot {
-    position: relative; height: 470px;
-    background: linear-gradient(178deg, #FFFDF8 0%, #F4EFE4 62%, #EFE8DA 100%);
-    border-top: 1px solid var(--line);
+  /* deep space backdrop, fixed behind every frame */
+  #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  #sky .stars { position: absolute; inset: -50%; width: 1px; height: 1px; }
+  #sky .glow {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(70% 55% at 78% 8%, rgba(125,224,208,.10), transparent 62%),
+      radial-gradient(85% 60% at 12% 96%, rgba(242,179,106,.09), transparent 60%),
+      radial-gradient(120% 100% at 50% 50%, transparent 40%, rgba(2,4,9,.85) 100%);
   }
-  .heroGrid .stage-slot { height: 430px; }
-  three-d-stage { display: block; width: 100%; height: 100%; --stage-note: rgba(29, 31, 27, 0.38); }
+  /* earth limb along the bottom edge */
+  #sky .limb {
+    position: absolute; left: -30%; right: -30%; bottom: -78vh; height: 110vh;
+    border-radius: 50% 50% 0 0;
+    background: radial-gradient(90% 90% at 50% 100%, rgba(70,140,205,.30), rgba(30,70,130,.13) 45%, transparent 70%);
+    box-shadow: 0 0 140px 40px rgba(90,170,235,.10);
+  }
+
+  /* the scroller: one full frame per notch */
+  #deck {
+    position: relative; z-index: 1;
+    height: 100vh; overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  #deck::-webkit-scrollbar { display: none; }
+  .frame {
+    position: relative;
+    height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: grid;
+  }
+
+  /* 3D fills the frame */
+  .stage-slot { position: absolute; inset: 0; }
+  .frame::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 52%; z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, rgba(4,7,15,.55) 48%, rgba(4,7,15,.88));
+  }
+  .frame:first-child::after, .frame:last-child::after { content: none; }
+  three-d-stage { display: block; width: 100%; height: 100%; --stage-note: rgba(234, 240, 248, 0.34); }
   .stage-slot::before {
-    content: "loading model";
-    position: absolute; inset: 0; display: grid; place-items: center;
-    font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: rgba(29,31,27,.25);
+    content: "";
+    position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px;
+    border: 1px solid rgba(125,224,208,.22); border-top-color: var(--cell);
+    border-radius: 50%; animation: spin 1.1s linear infinite;
   }
-  .stage-slot.is-live::before { content: none; }
-  .stage-slot.is-failed::before { content: "model unavailable"; color: #A85B44; }
+  .stage-slot.is-live::before, .stage-slot.is-failed::before { content: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .heroGrid { display: grid; grid-template-columns: 1.06fr 1fr; gap: 26px; align-items: start; padding-bottom: 20px; }
-  .heroGrid .card:last-child { margin-top: 52px; }
+  /* overlay type, never intercepting the orbit drag */
+  .overlay {
+    position: relative; z-index: 2; pointer-events: none;
+    height: 100%; padding: 46px 150px 116px 56px;
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .overlay > * { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1); }
+  .frame.active .overlay > * { opacity: 1; transform: none; }
+  .frame.active .overlay > :nth-child(2) { transition-delay: .08s; }
+  .frame.active .overlay > :nth-child(3) { transition-delay: .16s; }
 
-  section.pair { padding: 96px 0 4px; }
-  section.pair + section.pair { border-top: 1px solid var(--line); }
-  .pairHead { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: start; margin-bottom: 34px; }
-  .pair.flip .pairHead .title { order: 2; }
   .num {
-    font-family: "Instrument Serif", Georgia, serif; font-size: 15px; letter-spacing: .1em;
-    color: rgba(29,31,27,.35); display: flex; align-items: baseline; gap: 14px; margin: 0 0 16px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--faint); display: flex; gap: 18px; align-items: baseline;
   }
-  .num b { font-size: 44px; font-weight: 400; line-height: .8; color: var(--ink); opacity: .16; }
-  h2 {
-    font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
-    font-size: clamp(30px, 3.6vw, 46px); line-height: 1.06; letter-spacing: -.015em; margin: 0;
+  .num b { color: var(--ink); font-weight: 400; letter-spacing: .22em; }
+
+  .labels { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; }
+  .labels .side { max-width: 32ch; }
+  .labels .side.right { text-align: right; margin-left: auto; }
+  .side .kind {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+    display: block; margin-bottom: 10px;
   }
-  h2 .arrow { color: rgba(29,31,27,.28); padding: 0 8px; font-style: italic; }
-  h2 .bio { color: var(--cell); }
-  h2 .sta { color: var(--iss); }
-  .pairHead p { margin: 0; color: var(--dim); font-size: 16.5px; }
-  .pairHead p + p { margin-top: 16px; }
-  section.finale .pairHead p strong { color: var(--ink); font-weight: 400; }
+  .side.left .kind { color: var(--cell); }
+  .side.right .kind { color: var(--iss); }
+  .side h2 { font-size: clamp(22px, 2.5vw, 32px); font-weight: 200; letter-spacing: -.02em; margin: 0 0 8px; line-height: 1.1; }
+  .side p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--dim); }
 
-  .reveal { opacity: 0; transform: translateY(18px); }
-  .reveal.in { opacity: 1; transform: none; transition: opacity .9s cubic-bezier(.2,.75,.25,1), transform .9s cubic-bezier(.2,.75,.25,1); }
+  /* title + closing frames */
+  .center { place-self: center; text-align: center; max-width: 20ch; min-height: 0; }
+  .eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--cell); margin: 0 0 clamp(12px, 3vh, 26px); }
+  h1 { font-size: clamp(32px, min(7vw, 9.5vh), 82px); font-weight: 200; line-height: 1.02; letter-spacing: -.035em; margin: 0; }
+  h1 em { font-style: normal; color: var(--cell); }
+  .center .lede { max-width: 46ch; margin: clamp(14px, 3vh, 26px) auto 0; color: var(--dim); font-size: clamp(14px, 1.9vh, 17px); }
+  .solo { place-self: end start; }
+  .solo h2 { font-size: clamp(26px, 3.4vw, 42px); font-weight: 200; letter-spacing: -.025em; margin: 0 0 10px; }
+  .solo .scale { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; color: var(--faint); }
 
-  footer {
-    margin-top: 110px; padding: 60px 0 110px;
-    border-top: 1px solid var(--line); color: var(--dim); font-size: 15px;
+  .frame:first-child .overlay { padding-bottom: 46px; }
+  .scrollcue {
+    justify-self: center; align-self: end;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint);
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
-  footer p { max-width: 60ch; margin: 0 0 14px; }
-  footer .label { color: rgba(29,31,27,.35); }
+  .scrollcue span::after { content: ""; display: block; width: 1px; height: clamp(14px, 4vh, 34px); margin: 10px auto 0;
+    background: linear-gradient(var(--faint), transparent); animation: drift 2.4s ease-in-out infinite; }
+  @keyframes drift { 0%,100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(5px); } }
 
-  @media (max-width: 900px) {
-    .heroGrid, .pairHead { grid-template-columns: 1fr; gap: 26px; }
-    .heroGrid .card:last-child { margin-top: 0; }
-    .pair.flip .pairHead .title { order: 0; }
-    .stage-slot, .heroGrid .stage-slot { height: 350px; }
-    header.hero { padding-top: 60px; }
-    section.pair { padding-top: 66px; }
+  /* chapter rail */
+  #rail {
+    position: fixed; z-index: 5; right: 22px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 12px; align-items: flex-end;
+  }
+  #rail button {
+    appearance: none; background: none; border: 0; padding: 3px 0 3px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: transparent; transition: color .25s ease;
+  }
+  #rail button i { display: block; width: 16px; height: 1px; background: rgba(234,240,248,.26); transition: all .3s ease; }
+  #rail button:hover { color: var(--dim); }
+  #rail button[aria-current="true"] { color: var(--ink); }
+  #rail button[aria-current="true"] i { width: 30px; background: var(--cell); }
+
+  #brand {
+    position: fixed; z-index: 5; left: 56px; top: 46px; white-space: nowrap;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--faint);
+  }
+  .frame:first-child ~ .frame .overlay { padding-top: 76px; }
+
+  @media (max-width: 820px) {
+    .overlay { padding: 84px 24px 130px; }    .labels { grid-template-columns: 1fr; gap: 18px; }
+    .labels .side.right { text-align: left; margin-left: 0; }
+    #rail { display: none; }
+    #brand { left: 24px; }
   }
 </style>
 </head>
 <body>
 
-<div class="blobs"><span class="blob a"></span><span class="blob b"></span><span class="blob c"></span></div>
+<div id="sky"><div class="stars"></div><div class="limb"></div><div class="glow"></div></div>
+<div id="brand">Cell ↔ ISS</div>
+<nav id="rail" aria-label="Sections"></nav>
 
-<header class="hero wrap">
-  <p class="label">Cell biology / International Space Station</p>
-  <h1>A cell works like a <em>space station</em></h1>
-  <p class="lede">Both are sealed volumes keeping something alive somewhere that would otherwise kill it. Both run on the same handful of jobs: hold the boundary, make power, build parts, ship them, take out the trash. Here they are side by side, one job at a time.</p>
-  <p class="hint label"><span>Drag any model to orbit it · scroll to zoom · right-drag to pan</span></p>
-</header>
+<main id="deck">
 
-<div class="wrap heroGrid">
-  <div class="card">
-    <div class="cardHead">
-      <span class="name"><span class="dot bio"></span>Animal cell</span>
-      <span class="tag">~20 µm across</span>
-    </div>
-    <div class="stage-slot" data-single="cell" data-name="animal-cell"></div>
-  </div>
-  <div class="card">
-    <div class="cardHead">
-      <span class="name"><span class="dot sta"></span>International Space Station</span>
-      <span class="tag">109 m across</span>
-    </div>
-    <div class="stage-slot" data-single="iss" data-name="international-space-station"></div>
-  </div>
-</div>
-
-<main class="wrap">
-
-  <section class="pair">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>01</b> Boundary</p>
-        <h2><span class="bio">Cell membrane</span><span class="arrow">and</span><span class="sta">hull and airlock</span></h2>
+  <section class="frame" data-chapter="Open">
+    <div class="overlay">
+      <div class="num"></div>
+      <div class="center">
+        <p class="eyebrow">Cell biology / International Space Station</p>
+        <h1>A cell runs like a <em>space station</em></h1>
+        <p class="lede">Two sealed volumes keeping something alive somewhere that would kill it. Same jobs, different scale.</p>
       </div>
-      <div>
-        <p>The membrane is a double layer of fat with proteins parked in it. It is picky rather than sealed: small things slip through, everything else needs a channel or a door.</p>
-        <p>The station's hull holds pressure the same way, and anything crossing it goes through the Quest airlock on purpose, with someone deciding.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Phospholipid bilayer, channel protein, receptor</span>
-        <span class="name"><span class="dot sta"></span>Pressure hull, shielding, Quest airlock</span>
-      </div>
-      <div class="stage-slot" data-left="membranePatch" data-right="airlock" data-name="membrane-and-airlock"></div>
+      <div class="scrollcue"><span>Scroll</span></div>
     </div>
   </section>
 
-  <section class="pair flip">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>02</b> The medium</p>
-        <h2><span class="bio">Cytoplasm</span><span class="arrow">and</span><span class="sta">cabin atmosphere</span></h2>
+  <section class="frame" data-chapter="The cell">
+    <div class="stage-slot" data-single="cell" data-name="animal-cell" data-autorotate="1" data-note="1"></div>
+    <div class="overlay">
+      <div class="num"><b>The specimen</b></div>
+      <div class="solo">
+        <h2 style="color:var(--cell)">Animal cell</h2>
+        <p class="scale">≈ 20 µm · drag to orbit</p>
       </div>
-      <div>
-        <p>Everything inside the cell sits in cytosol, a crowded fluid of water, salts and dissolved protein. It is not empty space, it is the thing that lets parts reach each other.</p>
-        <p>Inside the station that role goes to the air, kept breathable and pushed around by fans day and night. Stop the fans and the crew ends up in a pocket of their own exhaled carbon dioxide.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Cytosol with suspended organelles</span>
-        <span class="name"><span class="dot sta"></span>Cabin volume, ducting and circulation fan</span>
-      </div>
-      <div class="stage-slot" data-left="cytoplasm" data-right="cabinAir" data-name="cytoplasm-and-cabin-air"></div>
+      <div></div>
     </div>
   </section>
 
-  <section class="pair">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>03</b> Command</p>
-        <h2><span class="bio">Nucleus</span><span class="arrow">and</span><span class="sta">service module</span></h2>
+  <section class="frame" data-chapter="The station">
+    <div class="stage-slot" data-single="iss" data-name="international-space-station" data-autorotate="1"></div>
+    <div class="overlay">
+      <div class="num"><b>The counterpart</b></div>
+      <div class="solo">
+        <h2 style="color:var(--iss)">International Space Station</h2>
+        <p class="scale">109 m across · 435 tonnes</p>
       </div>
-      <div>
-        <p>The nucleus holds the DNA behind a double membrane and never lets it leave. Instructions go out as copies, through pores in the wall.</p>
-        <p>Zvezda is where the station's command and control lives. The plans come from the ground, the module holds them, and the rest of the station works off the copies.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Nuclear envelope, pores, chromatin, nucleolus</span>
-        <span class="name"><span class="dot sta"></span>Zvezda service module</span>
-      </div>
-      <div class="stage-slot" data-left="nucleus" data-right="zvezda" data-name="nucleus-and-zvezda"></div>
+      <div></div>
     </div>
   </section>
 
-  <section class="pair flip">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>04</b> Manufacturing</p>
-        <h2><span class="bio">Ribosome</span><span class="arrow">and</span><span class="sta">on-orbit 3D printer</span></h2>
+  <section class="frame" data-chapter="Boundary">
+    <div class="stage-slot" data-left="membranePatch" data-right="airlock" data-name="membrane-and-airlock"></div>
+    <div class="overlay">
+      <div class="num"><b>01</b> Boundary</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Cell membrane</h2><p>Picky, not sealed. Crossing it means using a channel.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Hull &amp; airlock</h2><p>Holds pressure. Anything in or out goes through Quest.</p></div>
       </div>
-      <div>
-        <p>A ribosome reads the instruction strand and builds a protein from it, one amino acid at a time. Tiny machine, enormous output.</p>
-        <p>The station's printer works off a file sent up from the ground and lays down a part in plastic. Same idea: instructions in, physical object out, no delivery needed.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Large and small subunits, mRNA, growing chain</span>
-        <span class="name"><span class="dot sta"></span>Additive manufacturing rack</span>
-      </div>
-      <div class="stage-slot" data-left="ribosome" data-right="printer" data-name="ribosome-and-printer"></div>
     </div>
   </section>
 
-  <section class="pair">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>05</b> Processing</p>
-        <h2><span class="bio">Endoplasmic reticulum</span><span class="arrow">and</span><span class="sta">labs and nodes</span></h2>
+  <section class="frame" data-chapter="Medium">
+    <div class="stage-slot" data-left="cytoplasm" data-right="cabinAir" data-name="cytoplasm-and-cabin-air"></div>
+    <div class="overlay">
+      <div class="num"><b>02</b> The medium</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Cytoplasm</h2><p>Crowded fluid that lets every part reach every other.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Cabin atmosphere</h2><p>Air kept moving by fans. Stop them and CO₂ pools.</p></div>
       </div>
-      <div>
-        <p>New proteins land in the rough ER, which is studded with ribosomes, and get folded and checked before they go anywhere. The smooth ER next door handles fats and detox work.</p>
-        <p>The lab modules do the equivalent, and the nodes between them are the corridor that carries work from one bay to the next.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Rough cisternae and smooth tubules</span>
-        <span class="name"><span class="dot sta"></span>Destiny, Columbus and a connecting node</span>
-      </div>
-      <div class="stage-slot" data-left="er" data-right="labModules" data-name="er-and-lab-modules"></div>
     </div>
   </section>
 
-  <section class="pair flip">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>06</b> Shipping</p>
-        <h2><span class="bio">Golgi complex</span><span class="arrow">and</span><span class="sta">cargo module</span></h2>
+  <section class="frame" data-chapter="Command">
+    <div class="stage-slot" data-left="nucleus" data-right="zvezda" data-name="nucleus-and-zvezda"></div>
+    <div class="overlay">
+      <div class="num"><b>03</b> Command</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Nucleus</h2><p>Holds the DNA. Sends copies out through pores.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Zvezda service module</h2><p>Command and control. Holds the plan, issues the orders.</p></div>
       </div>
-      <div>
-        <p>The Golgi is a stack of flattened sacs that takes finished proteins, adds the last tags, and buds them off in vesicles addressed to wherever they are needed.</p>
-        <p>Leonardo is the station's packing room. Cargo is sorted, bagged, labelled and loaded onto whichever vehicle is leaving next.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Cisternae with budding vesicles</span>
-        <span class="name"><span class="dot sta"></span>Leonardo permanent multipurpose module</span>
-      </div>
-      <div class="stage-slot" data-left="golgi" data-right="leonardo" data-name="golgi-and-cargo-module"></div>
     </div>
   </section>
 
-  <section class="pair">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>07</b> Power</p>
-        <h2><span class="bio">Mitochondria</span><span class="arrow">and</span><span class="sta">solar arrays</span></h2>
+  <section class="frame" data-chapter="Manufacturing">
+    <div class="stage-slot" data-left="ribosome" data-right="printer" data-name="ribosome-and-printer"></div>
+    <div class="overlay">
+      <div class="num"><b>04</b> Manufacturing</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Ribosome</h2><p>Reads the strand, builds a protein one unit at a time.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>On-orbit 3D printer</h2><p>Reads a file from the ground, prints the part.</p></div>
       </div>
-      <div>
-        <p>Mitochondria burn sugar and oxygen to make ATP, the small rechargeable currency every other part of the cell spends. The folds inside, the cristae, exist to pack in more surface area.</p>
-        <p>The arrays do the same trick with sunlight, and the batteries carry the station through the 45 minutes of darkness in every 90-minute orbit.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Outer membrane, cristae, ATP</span>
-        <span class="name"><span class="dot sta"></span>Solar wings, gimbal, batteries</span>
-      </div>
-      <div class="stage-slot" data-left="mitochondrion" data-right="solarArray" data-name="mitochondrion-and-solar-array"></div>
     </div>
   </section>
 
-  <section class="pair flip">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>08</b> Waste</p>
-        <h2><span class="bio">Lysosome</span><span class="arrow">and</span><span class="sta">cargo freighter</span></h2>
+  <section class="frame" data-chapter="Processing">
+    <div class="stage-slot" data-left="er" data-right="labModules" data-name="er-and-lab-modules"></div>
+    <div class="overlay">
+      <div class="num"><b>05</b> Processing</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Endoplasmic reticulum</h2><p>Folds and checks new proteins before they ship.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Labs &amp; nodes</h2><p>Destiny and Columbus do the work; nodes move it along.</p></div>
       </div>
-      <div>
-        <p>Lysosomes are the cell's stomach: a membrane bag of enzymes that breaks down worn-out parts and returns the pieces for reuse. Keeping those enzymes bagged is the whole point.</p>
-        <p>Cygnus is the station's version. It arrives full of supplies, leaves full of trash, and burns up on the way down.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Enzymes digesting a worn-out organelle</span>
-        <span class="name"><span class="dot sta"></span>Cygnus freighter, loaded for disposal</span>
-      </div>
-      <div class="stage-slot" data-left="lysosome" data-right="cygnus" data-name="lysosome-and-cygnus"></div>
     </div>
   </section>
 
-  <section class="pair">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>09</b> Structure</p>
-        <h2><span class="bio">Cytoskeleton</span><span class="arrow">and</span><span class="sta">integrated truss</span></h2>
+  <section class="frame" data-chapter="Shipping">
+    <div class="stage-slot" data-left="golgi" data-right="leonardo" data-name="golgi-and-cargo-module"></div>
+    <div class="overlay">
+      <div class="num"><b>06</b> Shipping</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Golgi complex</h2><p>Tags finished proteins and buds them off, addressed.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Leonardo cargo module</h2><p>The packing room. Sorted, bagged, loaded, gone.</p></div>
       </div>
-      <div>
-        <p>The cytoskeleton is scaffolding and railway at once. Microtubules, actin and intermediate filaments hold the cell's shape and give motor proteins a track to haul cargo along.</p>
-        <p>The truss is the station's backbone, and the robotic arm rides a cart down its rail to wherever the work is.</p>
-      </div>
-    </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Microtubules, actin, centrioles</span>
-        <span class="name"><span class="dot sta"></span>Truss segment, mobile transporter, arm</span>
-      </div>
-      <div class="stage-slot" data-left="cytoskeleton" data-right="truss" data-name="cytoskeleton-and-truss"></div>
     </div>
   </section>
 
-  <section class="pair flip finale">
-    <div class="pairHead reveal">
-      <div class="title">
-        <p class="num"><b>10</b> Ending on purpose</p>
-        <h2><span class="bio">Apoptosis</span><span class="arrow">and</span><span class="sta">planned deorbit</span></h2>
-      </div>
-      <div>
-        <p>Cells do not only die by accident. Apoptosis is a shutdown the cell runs on itself when it is damaged, infected or simply no longer needed: enzymes called caspases switch on, the chromatin condenses, and the cell packages itself into neat parcels that neighbours absorb. <strong>Nothing spills, nothing inflames.</strong></p>
-        <p>The ISS gets the same kind of ending. Rather than letting a 435-tonne structure come down wherever it likes, the plan is to lower the orbit from 2028, dock a purpose-built deorbit vehicle, and steer the breakup into an empty stretch of the South Pacific around 2030. A controlled end is part of the design.</p>
+  <section class="frame" data-chapter="Power">
+    <div class="stage-slot" data-left="mitochondrion" data-right="solarArray" data-name="mitochondrion-and-solar-array"></div>
+    <div class="overlay">
+      <div class="num"><b>07</b> Power</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Mitochondrion</h2><p>Burns sugar for ATP. The folds pack in surface area.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Solar arrays</h2><p>Same trick with sunlight; batteries cover the night pass.</p></div>
       </div>
     </div>
-    <div class="card">
-      <div class="cardHead split">
-        <span class="name"><span class="dot bio"></span>Blebbing cell and apoptotic bodies</span>
-        <span class="name"><span class="dot sta"></span>Station under retro burn, deorbit vehicle aft</span>
+  </section>
+
+  <section class="frame" data-chapter="Waste">
+    <div class="stage-slot" data-left="lysosome" data-right="cygnus" data-name="lysosome-and-cygnus"></div>
+    <div class="overlay">
+      <div class="num"><b>08</b> Waste</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Lysosome</h2><p>A bag of enzymes. Breaks down worn parts for reuse.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Cygnus freighter</h2><p>Arrives full of supplies, leaves full of trash, burns up.</p></div>
       </div>
-      <div class="stage-slot" data-left="apoptosis" data-right="deorbit" data-name="apoptosis-and-deorbit"></div>
+    </div>
+  </section>
+
+  <section class="frame" data-chapter="Structure">
+    <div class="stage-slot" data-left="cytoskeleton" data-right="truss" data-name="cytoskeleton-and-truss"></div>
+    <div class="overlay">
+      <div class="num"><b>09</b> Structure</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Organelle</span><h2>Cytoskeleton</h2><p>Scaffolding and railway. Holds shape, carries cargo.</p></div>
+        <div class="side right"><span class="kind">ISS system</span><h2>Integrated truss</h2><p>The backbone. The arm rides a cart along its rail.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame" data-chapter="Ending">
+    <div class="stage-slot" data-left="apoptosis" data-right="deorbit" data-name="apoptosis-and-deorbit"></div>
+    <div class="overlay">
+      <div class="num"><b>10</b> Ending on purpose</div>
+      <div></div>
+      <div class="labels">
+        <div class="side left"><span class="kind">Process</span><h2>Apoptosis</h2><p>The cell packages itself into parcels. Nothing spills.</p></div>
+        <div class="side right"><span class="kind">ISS plan</span><h2>Controlled deorbit</h2><p>Lowered from 2028, steered into the Pacific around 2030.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame" data-chapter="Close">
+    <div class="overlay">
+      <div class="num"></div>
+      <div class="center" style="max-width:30ch">
+        <h1 style="font-size:clamp(24px, min(3.6vw, 5.5vh), 44px)">Where it stops</h1>
+        <p class="lede">A cell builds its own replacements and copies itself, with nobody on the ground deciding. The station can do neither.</p>
+      </div>
+      <div></div>
     </div>
   </section>
 
 </main>
-
-<footer class="wrap">
-  <p>Where the analogy stops: a cell builds its own replacements and copies itself, and no one on the ground is deciding anything. The station cannot do either.</p>
-  <p class="label">Models are simplified and not to scale, built to be read rather than measured</p>
-</footer>
 
 <script src="src/three-d-stage.js"></script>
 <script type="module" src="src/main.js"></script>
