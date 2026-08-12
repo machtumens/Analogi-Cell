@@ -9,30 +9,6 @@
       overflow: hidden;
     }
     canvas { display: block; outline: none; }
-    .toolbar {
-      position: absolute;
-      right: 16px;
-      bottom: 16px;
-      display: flex;
-      gap: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    .toolbar button {
-      appearance: none;
-      border: 1px solid rgba(20, 20, 19, 0.18);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.92);
-      color: #1a1915;
-      font-family: inherit;
-      font-size: 12.5px;
-      font-weight: 500;
-      line-height: 1;
-      padding: 9px 12px;
-      cursor: default;
-    }
-    .toolbar button:hover { background: #fff; }
-    .toolbar button:active { transform: translateY(1px); }
-    .toolbar button[disabled] { opacity: 0.5; pointer-events: none; }
     .note {
       position: absolute;
       left: 16px;
@@ -55,25 +31,6 @@
       white-space: pre-line;
     }
   `;
-  function download(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4e3);
-  }
-  function notifyExport(format, ok) {
-    try {
-      window.parent.postMessage(
-        { type: "omelette:notify-3d-export", format, ok: ok === true },
-        "*"
-      );
-    } catch (e) {
-    }
-  }
   class ThreeDStage extends HTMLElement {
     constructor() {
       super();
@@ -88,15 +45,6 @@
       note.className = "note";
       note.textContent = "Drag to orbit \xB7 scroll to zoom \xB7 right-drag to pan";
       root.appendChild(note);
-      this._toolbar = document.createElement("div");
-      this._toolbar.className = "toolbar";
-      this._objBtn = document.createElement("button");
-      this._objBtn.type = "button";
-      this._objBtn.textContent = "Download OBJ + MTL";
-      this._objBtn.addEventListener("click", () => this._runExport("obj"));
-      this._toolbar.appendChild(this._objBtn);
-      root.appendChild(this._toolbar);
-      this._setButtonsEnabled(false);
       this.ready = new Promise((resolve, reject) => {
         this._readyResolve = resolve;
         this._readyReject = reject;
@@ -226,75 +174,6 @@
         this._key.shadow.camera.updateProjectionMatrix();
       }
       this._scene.add(object);
-      this._setButtonsEnabled(true);
-    }
-    get _basename() {
-      return (this.getAttribute("name") || "model").replace(/[^\w.-]+/g, "_");
-    }
-    _setButtonsEnabled(on) {
-      this._objBtn.disabled = !on;
-    }
-    /** Every mesh and material needs a unique name for o/usemtl lines —
-     *  fill in stable fallbacks, and return the unique material list. */
-    _nameParts() {
-      const mats = [];
-      const seen = /* @__PURE__ */ new Set();
-      let meshI = 0;
-      let matI = 0;
-      this._object.traverse((o) => {
-        if (!o.isMesh) return;
-        if (!o.name) o.name = "part_" + meshI;
-        meshI += 1;
-        const list = Array.isArray(o.material) ? o.material : [o.material];
-        for (const m of list) {
-          if (!m || mats.includes(m)) continue;
-          if (!m.name) {
-            m.name = "mat_" + matI;
-            matI += 1;
-          }
-          while (seen.has(m.name)) {
-            m.name = m.name + "_" + matI;
-            matI += 1;
-          }
-          seen.add(m.name);
-          mats.push(m);
-        }
-      });
-      return mats;
-    }
-    /** One export attempt, reported to the host however it settles.
-     *  Rethrows so a failure stays visible on the guest console exactly as
-     *  before. The no-object early return is not an attempt (the toolbar is
-     *  disabled until the model loads) and reports nothing. */
-    async _runExport(format) {
-      if (!this._object) return;
-      try {
-        await this._exportObj();
-        notifyExport(format, true);
-      } catch (err) {
-        notifyExport(format, false);
-        throw err;
-      }
-    }
-    async _exportObj() {
-      if (!this._object) return;
-      const mod = await import("three/addons/exporters/OBJExporter.js");
-      const mats = this._nameParts();
-      const base = this._basename;
-      const obj = "mtllib " + base + ".mtl\n" + new mod.OBJExporter().parse(this._object);
-      let mtl = "# Exported by three-d-stage\n";
-      for (const m of mats) {
-        const c = m.color || { r: 0.8, g: 0.8, b: 0.8 };
-        const rough = typeof m.roughness === "number" ? m.roughness : 0.5;
-        const opacity = typeof m.opacity === "number" ? m.opacity : 1;
-        mtl += "newmtl " + m.name + "\n";
-        mtl += "Kd " + c.r.toFixed(4) + " " + c.g.toFixed(4) + " " + c.b.toFixed(4) + "\n";
-        mtl += "Ks 0.2000 0.2000 0.2000\n";
-        mtl += "Ns " + Math.round((1 - rough) * 200) + "\n";
-        mtl += "d " + opacity.toFixed(4) + "\n\n";
-      }
-      download(new Blob([obj], { type: "text/plain" }), base + ".obj");
-      download(new Blob([mtl], { type: "text/plain" }), base + ".mtl");
     }
   }
   customElements.define("three-d-stage", ThreeDStage);

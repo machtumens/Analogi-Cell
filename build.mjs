@@ -12,7 +12,6 @@ const importmap = {
   imports: {
     'three': jsData('vendor/three.min.js'),
     'three/addons/controls/OrbitControls.js': jsData('vendor/OrbitControls.min.js'),
-    'three/addons/exporters/OBJExporter.js': jsData('vendor/OBJExporter.min.js'),
   },
 };
 
